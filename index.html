@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loại sự cố | SafeNeighborhood</title>
+
+  <style>
+    :root {
+      --blue: #34599d;
+      --navy-dark: #0d1926;
+      --navy-light: #17385f;
+      --text: #303640;
+      --muted: #818895;
+      --border: #e8eaf0;
+      --page: #f8f9fb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--page);
+      font: 14px Arial, Helvetica, sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 2;
+      display: flex;
+      width: 190px;
+      flex-direction: column;
+      padding: 14px 10px;
+      color: #e0e7ef;
+      background: linear-gradient(180deg, var(--navy-dark), var(--navy-light));
+    }
+
+    .brand, .profile, .nav-item {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand {
+      gap: 9px;
+      margin: 3px 4px 18px;
+      color: #fff;
+    }
+
+    .brand-icon {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid #8190a1;
+      border-radius: 7px;
+      background: #344a60;
+    }
+
+    .brand-name { font-size: 11px; font-weight: bold; }
+    .brand-caption, .profile-role {
+      display: block;
+      margin-top: 3px;
+      color: #b9c5d2;
+      font-size: 9px;
+    }
+
+    .sidebar-label {
+      margin: 11px 6px 7px;
+      color: #aab8c8;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: .7px;
+    }
+
+    .workspace-select {
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      border: 1px solid #ffffff20;
+      border-radius: 5px;
+      color: #fff;
+      background: #101f30;
+    }
+
+    .workspace-select:focus-within { background: #0b1622; }
+
+    .workspace-select select {
+      width: 100%;
+      padding: 9px 0;
+      border: 0;
+      outline: 0;
+      appearance: none;
+      color: #fff;
+      background: transparent;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .workspace-select option {
+      color: #fff;
+      background: #172b40;
+    }
+
+    .nav-item {
+      gap: 9px;
+      min-height: 33px;
+      margin: 1px 0;
+      padding: 7px 8px;
+      border-radius: 6px;
+      color: inherit;
+      font-size: 11px;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background: #ffffff12; }
+    .nav-item .icon { width: 16px; text-align: center; }
+    .nav-item.active {
+      color: #324253;
+      background: #f2e9d5;
+      font-weight: 600;
+    }
+
+    .spacer { flex: 1; min-height: 16px; }
+
+    .profile {
+      gap: 8px;
+      padding: 8px 4px 2px;
+      font-size: 10px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      color: #36517c;
+      background: #dce6f3;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .main {
+      width: calc(100% - 190px);
+      min-height: 100vh;
+      margin-left: 190px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      height: 64px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 22px 0;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .topbar-title {
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      color: #626a77;
+      font-size: 10px;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .breadcrumbs { padding-top: 8px; color: #626a79; font-size: 11px; }
+    .breadcrumbs span { padding: 0 7px; color: #aeb4be; }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .search {
+      width: 250px;
+      padding: 9px 11px;
+      border: 1px solid #eceef2;
+      border-radius: 7px;
+      outline: none;
+      background: #fbfbfc;
+      font-size: 10px;
+    }
+
+    .search:focus { border-color: #a9b8d1; }
+
+    .notification {
+      position: relative;
+      color: #657080;
+      font-size: 17px;
+    }
+
+    .notification::after {
+      position: absolute;
+      top: 0;
+      right: -2px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d34c4c;
+      content: "";
+    }
+
+    .content {
+      max-width: 1600px;
+      margin: auto;
+      padding: 32px 26px 48px;
+    }
+
+    .page-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: #777f8d;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    h1 { margin: 0 0 7px; font-size: 28px; font-weight: 600; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .primary-button, .receive-button {
+      border: 0;
+      border-radius: 6px;
+      color: #fff;
+      background: var(--blue);
+      font-weight: 600;
+    }
+
+    .primary-button {
+      padding: 11px 15px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .primary-button:hover, .receive-button:hover { background: #294987; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      align-items: start;
+      gap: 18px;
+    }
+
+    .table-card, .ai-card {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 2px 8px #222b3d05;
+    }
+
+    .table-card { overflow: hidden; }
+
+    .card-heading {
+      display: flex;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 18px 10px;
+    }
+
+    .card-heading h2 { margin: 0 0 5px; font-size: 15px; font-weight: 600; }
+    .updated { color: var(--muted); font-size: 10px; }
+
+    .filter-pill, .status, .ai-chip {
+      display: inline-block;
+      border-radius: 14px;
+      white-space: nowrap;
+    }
+
+    .filter-pill {
+      padding: 5px 9px;
+      color: #635b9a;
+      background: #f0eef9;
+      font-size: 10px;
+    }
+
+    .selection-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 18px;
+      border-block: 1px solid var(--border);
+      background: #f8f9fc;
+    }
+
+    .selection-count { color: #515b6a; font-size: 10px; }
+    .selection-actions { display: flex; gap: 7px; }
+
+    .selection-actions button {
+      padding: 7px 10px;
+      border: 0;
+      border-radius: 5px;
+      font-size: 10px;
+    }
+
+    .selection-actions button:not(.receive-button) {
+      color: #626978;
+      background: transparent;
+    }
+
+    .receive-button { padding: 7px 10px; font-size: 10px; }
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      min-width: 680px;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      height: 40px;
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--border);
+      color: #727987;
+      font-size: 9px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    td {
+      height: 56px;
+      padding: 9px 11px;
+      border-bottom: 1px solid #f0f1f4;
+      vertical-align: middle;
+      font-size: 11px;
+    }
+
+    tbody tr:hover { background: #fcfcfe; }
+    th:first-child, td:first-child { padding-left: 16px; }
+
+    input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .issue-code { color: #52658b; white-space: nowrap; }
+    .issue-title { font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .issue-time { margin-top: 4px; color: #9298a2; font-size: 9px; }
+    .location { color: #656c77; white-space: nowrap; }
+
+    .status { padding: 5px 7px; font-size: 9px; }
+    .processing { color: #63589e; background: #f0eef9; }
+    .assigned { color: #58729d; background: #edf3fb; }
+    .waiting { color: #a87530; background: #fff4e4; }
+    .done { color: #468368; background: #eaf5ed; }
+
+    .sla { width: 86px; color: #656c79; font-size: 9px; white-space: nowrap; }
+    .progress {
+      height: 4px;
+      margin-top: 5px;
+      overflow: hidden;
+      border-radius: 4px;
+      background: #edf0f4;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: #647caf;
+    }
+
+    .more-button {
+      border: 0;
+      color: #858c98;
+      background: transparent;
+      font-size: 14px;
+    }
+
+    .table-footer {
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 7px 15px;
+      color: #737a87;
+      font-size: 10px;
+    }
+
+    .pagination { display: flex; align-items: center; gap: 3px; }
+
+    .page-button {
+      min-width: 23px;
+      height: 23px;
+      padding: 0 5px;
+      border: 0;
+      border-radius: 4px;
+      color: #687080;
+      background: transparent;
+      font-size: 10px;
+    }
+
+    .page-button.active { color: #fff; background: var(--blue); }
+    .page-button:disabled { opacity: .45; cursor: default; }
+
+    .ai-card { padding: 18px 16px; }
+
+    .ai-label {
+      margin: 0 0 10px;
+      color: #777e8b;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: .8px;
+      text-align: center;
+    }
+
+    .ai-title {
+      display: flex;
+      min-height: 43px;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .sparkle {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 7px;
+      color: #fff;
+      background: #655fb7;
+      font-size: 16px;
+    }
+
+    .ai-chip {
+      margin-left: auto;
+      padding: 4px 6px;
+      color: #615b9d;
+      background: #f0eef9;
+      font-size: 8px;
+    }
+
+    .ai-state {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 7px 0 10px;
+      padding: 8px;
+      border-radius: 5px;
+      color: #615b9d;
+      background: #f3f1fb;
+      font-size: 9px;
+    }
+
+    .ai-state.warning { color: #a87530; background: #fff6e8; }
+    .ai-state.success { color: #468368; background: #eaf5ed; }
+
+    .priority {
+      margin-top: 9px;
+      padding: 16px 0;
+      border-block: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .priority-label { color: #858b97; font-size: 9px; font-weight: 600; }
+
+    .priority strong {
+      display: block;
+      margin: 9px 0 5px;
+      color: #c86159;
+      font-size: 27px;
+    }
+
+    .confidence { color: #777e8b; font-size: 9px; }
+
+    .ai-description {
+      margin: 12px 0;
+      color: #687080;
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .why-button {
+      width: 100%;
+      margin: 0 0 11px;
+      padding: 0;
+      border: 0;
+      color: #626982;
+      background: transparent;
+      font-size: 10px;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .why-details {
+      display: none;
+      margin: -3px 0 10px;
+      color: #777e8b;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .why-details.visible { display: block; }
+    .ai-buttons { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .ai-buttons button {
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: #596170;
+      background: #fff;
+      font-size: 9px;
+    }
+
+    .ai-buttons .accept {
+      border-color: var(--blue);
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .ai-message { margin: 9px 0 0; color: #4d8969; font-size: 9px; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: #17243b55;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      width: min(430px, 100%);
+      padding: 21px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 12px 40px #17243b30;
+    }
+
+    .modal h2 { margin: 0 0 16px; font-size: 18px; }
+    .form-field { margin-bottom: 13px; }
+
+    .form-field label {
+      display: block;
+      margin-bottom: 6px;
+      color: #626978;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .form-field input, .form-field select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .modal-actions button {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      font-size: 10px;
+    }
+
+    .modal-actions .save-button {
+      border-color: var(--blue);
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 5;
+      padding: 11px 14px;
+      border: 1px solid #e6e8ed;
+      border-left: 3px solid #4d9a70;
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 7px 22px #17243b1c;
+      font-size: 10px;
+    }
+
+    .toast.warning { border-left-color: #d49a43; }
+    .is-hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .content { padding-inline: 16px; }
+      .workspace { grid-template-columns: minmax(0, 1fr) 235px; }
+    }
+
+    @media (max-width: 760px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .sidebar {
+        width: 54px;
+        align-items: center;
+        padding-inline: 7px;
+      }
+
+      .brand { justify-content: center; }
+
+      .brand > div,
+      .sidebar-label,
+      .workspace-select,
+      .nav-item:not(.active),
+      .spacer,
+      .profile {
+        display: none;
+      }
+
+      .nav-item.active {
+        width: 36px;
+        justify-content: center;
+        font-size: 0;
+      }
+
+      .main {
+        width: calc(100% - 54px);
+        margin-left: 54px;
+      }
+
+      .topbar { padding-inline: 9px; }
+      .topbar-title { display: none; }
+      .search { width: min(150px, 38vw); }
+      .top-actions { gap: 8px; }
+      .content { padding: 20px 10px; }
+      .page-heading { align-items: flex-start; }
+      .subtitle { max-width: 230px; line-height: 1.4; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" aria-label="Thanh điều hướng">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">⛨</span>
+      <div>
+        <div class="brand-name">SafeNeighborhood</div>
+        <div class="brand-caption">An toàn từ cộng đồng</div>
+      </div>
+    </div>
+
+    <div class="sidebar-label">KHÔNG GIAN LÀM VIỆC</div>
+    <div class="workspace-select">
+      <select aria-label="Chọn không gian làm việc">
+        <option>Cư dân</option>
+        <option>Vận hành</option>
+        <option>Điều phối</option>
+        <option selected>Quản trị</option>
+      </select>
+      <span aria-hidden="true">⌄</span>
+    </div>
+
+    <div class="sidebar-label">ĐIỀU HƯỚNG</div>
+    <a class="nav-item active" href="#loai-su-co"><span class="icon">▧</span>Loại sự cố</a>
+    <a class="nav-item" href="#khu-vuc"><span class="icon">▤</span>Khu vực</a>
+    <a class="nav-item" href="#nguoi-dung"><span class="icon">▦</span>Người dùng</a>
+    <a class="nav-item" href="#cau-hinh"><span class="icon">♧</span>Cấu hình hệ thống</a>
+    <a class="nav-item" href="#nhat-ky"><span class="icon">▥</span>Nhật ký hoạt động</a>
+
+    <div class="spacer"></div>
+
+    <div class="sidebar-label">THAM CHIẾU</div>
+    <a class="nav-item" href="#design-system"><span class="icon">▦</span>Design System</a>
+    <a class="nav-item" href="#ai-stats"><span class="icon">✦</span>AI States Reference</a>
+
+    <div class="spacer"></div>
+
+    <div class="profile">
+      <span class="avatar">NA</span>
+      <span>Nguyễn Minh An<span class="profile-role">Cư dân</span></span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">Design System for SafeNeighborhood ⌄</div>
+      <div class="breadcrumbs">⌂ <span>/</span> Loại sự cố</div>
+      <div class="top-actions">
+        <input
+          class="search"
+          id="searchInput"
+          type="search"
+          placeholder="⌕  Tìm kiếm mã sự cố, địa điểm..."
+          aria-label="Tìm kiếm sự cố"
+        >
+        <span class="notification" aria-label="Thông báo">♧</span>
+        <span class="avatar">NA</span>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">QUẢN TRỊ</p>
+          <h1>Loại sự cố</h1>
+          <p class="subtitle">Quản lý dữ liệu và theo dõi hoạt động trong một không gian thống nhất.</p>
+        </div>
+        <button class="primary-button" id="addButton" type="button">＋ Thêm mới</button>
+      </div>
+
+      <div class="workspace">
+        <section class="table-card" aria-label="Danh sách sự cố">
+          <div class="card-heading">
+            <div>
+              <h2>Tổng quan dữ liệu</h2>
+              <div class="updated">Cập nhật 5 phút trước</div>
+            </div>
+            <span class="filter-pill">● Đang xử lý</span>
+          </div>
+
+          <div class="selection-toolbar is-hidden" id="selectionToolbar">
+            <span class="selection-count" id="selectionCount"></span>
+            <div class="selection-actions">
+              <button class="receive-button" id="receiveButton" type="button">Tiếp nhận</button>
+              <button id="clearSelectionButton" type="button">Bỏ chọn</button>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th><input id="selectAll" type="checkbox" aria-label="Chọn tất cả trang này"></th>
+                  <th>MÃ SỰ CỐ</th>
+                  <th>NỘI DUNG</th>
+                  <th>KHU VỰC</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>SLA CÒN LẠI</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="issueRows"></tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <span id="resultCount"></span>
+            <div class="pagination" id="pagination"></div>
+          </div>
+        </section>
+
+        <aside class="ai-card" aria-label="Đề xuất Safe AI">
+          <p class="ai-label">SAFE AI</p>
+
+          <div class="ai-title">
+            <span class="sparkle" aria-hidden="true">✦</span>
+            <span>AI đề xuất mức ưu tiên</span>
+            <span class="ai-chip">✦ AI</span>
+          </div>
+
+          <div class="ai-state is-hidden" id="aiState" aria-live="polite">
+            <span aria-hidden="true">✓</span>
+            <span id="aiStateText"></span>
+          </div>
+
+          <div class="priority">
+            <div class="priority-label">ƯU TIÊN ĐỀ XUẤT</div>
+            <strong>CAO</strong>
+            <div class="confidence">Độ tin cậy 91%</div>
+          </div>
+
+          <p class="ai-description">Có nguy cơ ảnh hưởng an toàn giao thông vào ban đêm.</p>
+          <button class="why-button" id="whyButton" type="button">› Vì sao có kết quả này?</button>
+          <div class="why-details" id="whyDetails">
+            Sự cố có thể ảnh hưởng đến an toàn giao thông trong điều kiện thiếu ánh sáng.
+          </div>
+
+          <div class="ai-buttons">
+            <button class="accept" id="acceptButton" type="button">Chấp nhận</button>
+            <button id="editButton" type="button">Sửa</button>
+            <button id="rejectButton" type="button">Từ chối</button>
+            <button id="retryButton" type="button">✦ Tạo lại</button>
+          </div>
+
+          <p class="ai-message is-hidden" id="aiMessage" aria-live="polite"></p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <form class="modal" id="issueForm">
+      <h2>Thêm sự cố mới</h2>
+
+      <div class="form-field">
+        <label for="newTitle">Nội dung sự cố</label>
+        <input id="newTitle" name="title" required placeholder="Ví dụ: Đèn đường bị hỏng">
+      </div>
+
+      <div class="form-field">
+        <label for="newLocation">Khu vực</label>
+        <input id="newLocation" name="location" required placeholder="Ví dụ: P. Bến Nghé, Quận 1">
+      </div>
+
+      <div class="form-field">
+        <label for="newStatus">Trạng thái</label>
+        <select id="newStatus" name="status">
+          <option value="processing">Đang xử lý</option>
+          <option value="assigned">Đã phân công</option>
+          <option value="waiting">Đang chờ</option>
+          <option value="done">Hoàn thành</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelButton">Hủy</button>
+        <button type="submit" class="save-button">Tạo sự cố</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const pageSize = 4;
+    const selectedIds = new Set();
+    let currentPage = 1;
+    let searchTerm = "";
+    let toastTimer;
+
+    const issues = [
+      ["IS-2041", "Đèn đường không hoạt động", "12 phút trước", "P. Bến Nghé, Quận 1", "processing", "6 giờ", 72],
+      ["IS-2039", "Ổ gà lớn trên mặt đường", "48 phút trước", "P. Đa Kao, Quận 1", "assigned", "1 giờ 20 phút", 25],
+      ["IS-2036", "Cây đổ chắn lối đi bộ", "2 giờ trước", "P. Nguyễn Thái Bình", "waiting", "8 giờ", 52],
+      ["IS-2028", "Nắp cống bị hư hỏng", "Hôm qua", "P. Tân Định, Quận 1", "done", "9 giờ", 45],
+      ["IS-2025", "Rác thải chưa được thu gom", "Hôm qua", "P. Bến Thành, Quận 1", "processing", "5 giờ", 60],
+      ["IS-2022", "Vỉa hè bị nứt", "Hôm qua", "P. Cầu Ông Lãnh, Quận 1", "assigned", "4 giờ", 38],
+      ["IS-2019", "Biển báo giao thông bị nghiêng", "2 ngày trước", "P. Đa Kao, Quận 1", "waiting", "7 giờ", 48],
+      ["IS-2015", "Đọng nước trên vỉa hè", "2 ngày trước", "P. Tân Định, Quận 1", "done", "Hoàn tất", 100],
+      ["IS-2012", "Đèn tín hiệu giao thông bị lỗi", "3 ngày trước", "P. Bến Nghé, Quận 1", "processing", "3 giờ", 80],
+      ["IS-2008", "Cây xanh che khuất biển báo", "3 ngày trước", "P. Nguyễn Thái Bình", "assigned", "6 giờ", 55],
+      ["IS-2004", "Nắp hố ga bị lệch", "4 ngày trước", "P. Cầu Ông Lãnh, Quận 1", "waiting", "8 giờ", 30],
+      ["IS-2001", "Đèn công viên bị hỏng", "5 ngày trước", "P. Bến Thành, Quận 1", "done", "Hoàn tất", 100]
+    ].map(([id, title, time, location, status, sla, progress]) => ({
+      id, title, time, location, status, sla, progress
+    }));
+
+    const statusInfo = {
+      processing: { label: "Đang xử lý", className: "processing" },
+      assigned: { label: "Đã phân công", className: "assigned" },
+      waiting: { label: "Đang chờ", className: "waiting" },
+      done: { label: "Hoàn thành", className: "done" }
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[character]);
+
+    function getFilteredIssues() {
+      const query = searchTerm.toLocaleLowerCase("vi");
+
+      return issues.filter((issue) => {
+        const searchableText = [
+          issue.id,
+          issue.title,
+          issue.location,
+          statusInfo[issue.status].label
+        ].join(" ").toLocaleLowerCase("vi");
+
+        return searchableText.includes(query);6
+      });
+    }
+
+    function render() {
+      const filtered = getFilteredIssues();
+      const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+
+      const start = (currentPage - 1) * pageSize;
+      const visible = filtered.slice(start, start + pageSize);
+
+      $("#issueRows").innerHTML = visible.length
+        ? visible.map((issue) => {
+            const status = statusInfo[issue.status];
+
+            return `
+              <tr data-id="${escapeHtml(issue.id)}">
+                <td>
+                  <input class="row-check" type="checkbox"
+                    aria-label="Chọn ${escapeHtml(issue.id)}"
+                    ${selectedIds.has(issue.id) ? "checked" : ""}>
+                </td>
+                <td><a class="issue-code" href="#${escapeHtml(issue.id)}">#${escapeHtml(issue.id)}</a></td>
+                <td>
+                  <div class="issue-title">${escapeHtml(issue.title)}</div>
+                  <div class="issue-time">${escapeHtml(issue.time)}</div>
+                </td>
+                <td class="location">${escapeHtml(issue.location)}</td>
+                <td><span class="status ${status.className}">● ${status.label}</span></td>
+                <td>
+                  <div class="sla">
+                    ${escapeHtml(issue.sla)}
+                    <div class="progress">
+                      <span style="width:${issue.progress}%"></span>
+                    </div>
+                  </div>
+                </td>
+                <td><button class="more-button" type="button" aria-label="Tùy chọn">···</button></td>
+              </tr>
+            `;
+          }).join("")
+        : `<tr><td colspan="7" style="padding:24px;text-align:center;color:#818895">
+            Không tìm thấy sự cố phù hợp.</td></tr>`;
+
+      const selectedVisible = visible.filter((issue) => selectedIds.has(issue.id)).length;
+      const selectedCount = selectedIds.size;
+
+      $("#selectionCount").textContent = `${selectedCount} mục đã chọn`;
+      $("#selectionToolbar").classList.toggle("is-hidden", selectedCount === 0);
+      $("#selectAll").checked = visible.length > 0 && selectedVisible === visible.length;
+      $("#selectAll").indeterminate = selectedVisible > 0 && selectedVisible < visible.length;
+
+      $("#resultCount").textContent = filtered.length
+        ? `Hiển thị ${start + 1}-${start + visible.length} trong ${filtered.length} kết quả`
+        : "Hiển thị 0 kết quả";
+
+      const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
+
+      $("#pagination").innerHTML = `
+        <button class="page-button" data-page="${currentPage - 1}"
+          aria-label="Trang trước" ${currentPage === 1 ? "disabled" : ""}>‹</button>
+        ${pages.map((page) => `
+          <button class="page-button ${page === currentPage ? "active" : ""}"
+            data-page="${page}">${page}</button>
+        `).join("")}
+        <button class="page-button" data-page="${currentPage + 1}"
+          aria-label="Trang sau" ${currentPage === pageCount ? "disabled" : ""}>›</button>
+      `;
+    }
+
+    function showToast(message, warning = false) {
+      document.querySelector(".toast")?.remove();
+      clearTimeout(toastTimer);
+
+      const toast = document.createElement("div");
+      toast.className = `toast${warning ? " warning" : ""}`;
+      toast.setAttribute("role", "status");
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      toastTimer = setTimeout(() => toast.remove(), 3000);
+    }
+
+    $("#issueRows").addEventListener("change", (event) => {
+      if (!event.target.matches(".row-check")) return;
+
+      const id = event.target.closest("tr").dataset.id;
+
+      if (event.target.checked) selectedIds.add(id);
+      else selectedIds.delete(id);
+
+      render();
+    });
+
+    $("#selectAll").addEventListener("change", (event) => {
+      const start = (currentPage - 1) * pageSize;
+
+      getFilteredIssues().slice(start, start + pageSize).forEach((issue) => {
+        if (event.target.checked) selectedIds.add(issue.id);
+        else selectedIds.delete(issue.id);
+      });
+
+      render();
+    });
+
+    $("#clearSelectionButton").addEventListener("click", () => {
+      selectedIds.clear();
+      render();
+    });
+
+    $("#receiveButton").addEventListener("click", () => {
+      if (selectedIds.size === 0) {
+        showToast("Hãy chọn sự cố cần tiếp nhận.", true);
+        return;
+      }
+
+      showToast(`Đã tiếp nhận ${selectedIds.size} mục`);
+    });
+
+    $("#searchInput").addEventListener("input", (event) => {
+      searchTerm = event.target.value.trim();
+      currentPage = 1;
+      render();
+    });
+
+    $("#pagination").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-page]");
+
+      if (!button || button.disabled) return;
+
+      currentPage = Number(button.dataset.page);
+      render();
+    });
+
+    $("#whyButton").addEventListener("click", () => {
+      const isVisible = $("#whyDetails").classList.toggle("visible");
+      $("#whyButton").textContent = isVisible
+        ? "⌄ Ẩn giải thích"
+        : "› Vì sao có kết quả này?";
+    });
+
+    function setAiState(message, type = "") {
+      $("#aiState").className = `ai-state${type ? ` ${type}` : ""}`;
+      $("#aiStateText").textContent = message;
+      $("#aiMessage").textContent = message;
+      $("#aiMessage").classList.remove("is-hidden");
+    }
+
+    $("#acceptButton").addEventListener("click", () => {
+      setAiState("Đã áp dụng gợi ý AI", "success");
+      showToast("Đã áp dụng đề xuất của Safe AI.");
+    });
+
+    $("#editButton").addEventListener("click", () => {
+      setAiState("Đã chuyển sang chỉnh sửa thủ công");
+      showToast("Bạn có thể chỉnh sửa đề xuất thủ công.");
+    });
+
+    $("#rejectButton").addEventListener("click", () => {
+      setAiState("Đã bỏ qua gợi ý này", "warning");
+      showToast("Đã từ chối đề xuất AI.", true);
+    });
+
+    $("#retryButton").addEventListener("click", () => {
+      setAiState("Đã tạo lại đề xuất AI");
+      showToast("Đã tạo lại đề xuất AI.");
+    });
+
+    const modalBackdrop = $("#modalBackdrop");
+    const issueForm = $("#issueForm");
+
+    function closeModal() {
+      modalBackdrop.classList.remove("open");
+      issueForm.reset();
+    }
+
+    $("#addButton").addEventListener("click", () => {
+      modalBackdrop.classList.add("open");
+      $("#newTitle").focus();
+    });
+
+    $("#cancelButton").addEventListener("click", closeModal);
+
+    modalBackdrop.addEventListener("click", (event) => {
+      if (event.target === modalBackdrop) closeModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeModal();
+    });
+
+    issueForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(issueForm);
+      const nextId = Math.max(
+        ...issues.map((issue) => Number(issue.id.slice(3)))
+      ) + 1;
+
+      issues.unshift({
+        id: `IS-${nextId}`,
+        title: formData.get("title").trim(),
+        time: "Vừa xong",
+        location: formData.get("location").trim(),
+        status: formData.get("status"),
+        sla: "8 giờ",
+        progress: 10
+      });
+
+      closeModal();
+      $("#searchInput").value = "";
+      searchTerm = "";
+      currentPage = 1;
+      render();
+      showToast("Đã tạo sự cố mới.");
+    });
+
+    render();
+  </script>
+</body>
+</html>
